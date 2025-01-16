@@ -10,7 +10,7 @@ The package provides two types of Kafka producers:
 - Suitable for critical messages requiring confirmation
 
 ```go
-producer, err := kafkaproducer.NewSyncProducer(ctx, "example-service", brokers)
+producer, err := producer.NewSyncProducer(ctx, "example-service", brokers)
 if err != nil {
     return nil, fmt.Errorf("failed to create producer: %w", err)
 }
@@ -35,7 +35,7 @@ err = producer.SendMessages(ctx, []*sarama.ProducerMessage{msg1, msg2})
 - Suitable for high-volume, non-critical messages
 
 ```go
-producer, err := kafkaproducer.NewAsyncProducer(ctx, "example-service", brokers)
+producer, err := producer.NewAsyncProducer(ctx, "example-service", brokers)
 if err != nil {
     return nil, fmt.Errorf("failed to create producer: %w", err)
 }

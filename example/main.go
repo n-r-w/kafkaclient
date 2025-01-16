@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/IBM/sarama"
-	kafkaconsumer "github.com/n-r-w/kafkaclient/consumer"
-	kafkaproducer "github.com/n-r-w/kafkaclient/producer"
+	"github.com/n-r-w/kafkaclient/consumer"
+	"github.com/n-r-w/kafkaclient/producer"
 	"github.com/testcontainers/testcontainers-go/modules/kafka"
 )
 
@@ -35,7 +35,7 @@ func (p *MessageProcessor) ConsumeKafkaMessages(
 	ctx context.Context,
 	topic string,
 	partition int32,
-	msgs []kafkaconsumer.IMessage,
+	msgs []consumer.IMessage,
 ) error {
 	fmt.Printf("Start processing batch of %d messages\n", len(msgs))
 
@@ -59,22 +59,22 @@ func (p *MessageProcessor) ConsumeProcessorStop() {
 	fmt.Println("Message processor stopped")
 }
 
-func runConsumer(ctx context.Context, brokers []string, groupID, topic string) (*kafkaconsumer.Consumer, error) {
+func runConsumer(ctx context.Context, brokers []string, groupID, topic string) (*consumer.Consumer, error) {
 	// Create message processor
 	processor := &MessageProcessor{}
 
 	// Create consumer with configuration
-	c, err := kafkaconsumer.New(
+	c, err := consumer.New(
 		ctx,
 		"example-service",
 		brokers,
 		groupID,
-		map[kafkaconsumer.IConsumeProcessor][]string{
+		map[consumer.IConsumeProcessor][]string{
 			processor: {topic},
 		},
-		kafkaconsumer.WithBatchTopics(topic),
-		kafkaconsumer.WithBatchSize(5),
-		kafkaconsumer.WithFlushTimeout(2*time.Second),
+		consumer.WithBatchTopics(topic),
+		consumer.WithBatchSize(5),
+		consumer.WithFlushTimeout(2*time.Second),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create consumer: %w", err)
@@ -109,14 +109,14 @@ func createMessage(topic string, index int, msgType string) (*sarama.ProducerMes
 	}, nil
 }
 
-func runSyncProducer(ctx context.Context, brokers []string, topic string) (*kafkaproducer.SyncProducer, error) {
-	// Create and start producer
-	producer, err := kafkaproducer.NewSyncProducer(ctx, "example-service", brokers)
+func runSyncProducer(ctx context.Context, brokers []string, topic string) (*producer.SyncProducer, error) {
+	// Create and start p
+	p, err := producer.NewSyncProducer(ctx, "example-service", brokers)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create producer: %w", err)
 	}
 
-	if err := producer.Start(ctx); err != nil {
+	if err := p.Start(ctx); err != nil {
 		return nil, fmt.Errorf("failed to start producer: %w", err)
 	}
 	log.Println("Sync producer started")
@@ -129,23 +129,23 @@ func runSyncProducer(ctx context.Context, brokers []string, topic string) (*kafk
 				log.Printf("Failed to create message: %v", err)
 				continue
 			}
-			if _, _, err := producer.SendMessage(ctx, msg); err != nil {
+			if _, _, err := p.SendMessage(ctx, msg); err != nil {
 				log.Printf("Failed to send message: %v", err)
 			}
 		}
 	}()
 
-	return producer, nil
+	return p, nil
 }
 
-func runAsyncProducer(ctx context.Context, brokers []string, topic string) (*kafkaproducer.AsyncProducer, error) {
-	// Create and start producer
-	producer, err := kafkaproducer.NewAsyncProducer(ctx, "example-service", brokers)
+func runAsyncProducer(ctx context.Context, brokers []string, topic string) (*producer.AsyncProducer, error) {
+	// Create and start p
+	p, err := producer.NewAsyncProducer(ctx, "example-service", brokers)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create producer: %w", err)
 	}
 
-	if err := producer.Start(ctx); err != nil {
+	if err := p.Start(ctx); err != nil {
 		return nil, fmt.Errorf("failed to start producer: %w", err)
 	}
 	log.Println("Async producer started")
@@ -158,11 +158,11 @@ func runAsyncProducer(ctx context.Context, brokers []string, topic string) (*kaf
 				log.Printf("Failed to create message: %v", err)
 				continue
 			}
-			producer.SendMessage(ctx, msg)
+			p.SendMessage(ctx, msg)
 		}
 	}()
 
-	return producer, nil
+	return p, nil
 }
 
 func main() {
@@ -214,7 +214,7 @@ func main() {
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
 	// Run consumer
-	consumer, err := runConsumer(ctx, brokers, groupID, topic)
+	cons, err := runConsumer(ctx, brokers, groupID, topic)
 	if err != nil {
 		log.Printf("Failed to start consumer: %v", err)
 		return
@@ -239,7 +239,7 @@ func main() {
 	log.Println("Shutting down...")
 
 	// Stop consumer and producers
-	if err := consumer.Stop(context.Background()); err != nil {
+	if err := cons.Stop(context.Background()); err != nil {
 		log.Printf("Error stopping consumer: %v", err)
 	}
 	log.Println("Consumer stopped")

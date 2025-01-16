@@ -17,7 +17,7 @@ func (p *MessageProcessor) ConsumeKafkaMessages(
     ctx context.Context,
     topic string,
     partition int32,
-    msgs []kafkaconsumer.IMessage,
+    msgs []consumer.IMessage,
 ) error {
     fmt.Printf("Start processing batch of %d messages\n", len(msgs))
 
@@ -46,20 +46,20 @@ func (p *MessageProcessor) ConsumeProcessorStop() {
 ## Consumer Configuration
 
 ```go
-c, err := kafkaconsumer.New(
+c, err := consumer.New(
     ctx,
     "example-service",
     brokers,
     groupID,
-    map[kafkaconsumer.IConsumeProcessor][]string{
+    map[consumer.IConsumeProcessor][]string{
         processor: {topic},
     },
-    kafkaconsumer.WithBatchTopics(topic),
-    kafkaconsumer.WithBatchSize(1000),
-    kafkaconsumer.WithFlushTimeout(100*time.Millisecond),
-    kafkaconsumer.WithReconnectTimeout(time.Second),
-    kafkaconsumer.WithTelemetry(customTelemetry),
-    kafkaconsumer.WithErrorLogger(customErrorLogger),
+    consumer.WithBatchTopics(topic),
+    consumer.WithBatchSize(1000),
+    consumer.WithFlushTimeout(100*time.Millisecond),
+    consumer.WithReconnectTimeout(time.Second),
+    consumer.WithTelemetry(customTelemetry),
+    consumer.WithErrorLogger(customErrorLogger),
 )
 ```
 

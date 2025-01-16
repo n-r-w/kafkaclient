@@ -1,4 +1,4 @@
-package kafkaproducer
+package producer
 
 import (
 	"context"
@@ -7,8 +7,8 @@ import (
 	"github.com/IBM/sarama"
 )
 
-//go:generate mockgen -destination=sarama_mocks.go -package=kafkaproducer github.com/IBM/sarama AsyncProducer,SyncProducer
-//go:generate mockgen -destination=producer_mock.go -package=kafkaproducer -source interface.go
+//go:generate mockgen -destination=sarama_mocks.go -package=producer github.com/IBM/sarama AsyncProducer,SyncProducer
+//go:generate mockgen -destination=producer_mock.go -package=producer -source interface.go
 
 // IAsyncProducer asynchronous producer.
 type IAsyncProducer interface {

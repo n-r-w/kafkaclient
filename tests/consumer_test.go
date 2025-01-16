@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/IBM/sarama"
-	kafkaconsumer "github.com/n-r-w/kafkaclient/consumer"
+	consumer "github.com/n-r-w/kafkaclient/consumer"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -48,8 +48,8 @@ func TestConsumer_Integration(t *testing.T) {
 	defer ctrl.Finish()
 
 	// Create mock implementations
-	mockTelemetry := kafkaconsumer.NewMockITelemetry(ctrl)
-	mockErrorLogger := kafkaconsumer.NewMockIErrorLogger(ctrl)
+	mockTelemetry := consumer.NewMockITelemetry(ctrl)
+	mockErrorLogger := consumer.NewMockIErrorLogger(ctrl)
 
 	// Setup expectations for telemetry and error logging
 	mockTelemetry.EXPECT().
@@ -77,7 +77,7 @@ func TestConsumer_Integration(t *testing.T) {
 
 	t.Run("consumer initialization", func(t *testing.T) {
 		// Create a mock processor
-		mockProcessor := kafkaconsumer.NewMockIConsumeProcessor(ctrl)
+		mockProcessor := consumer.NewMockIConsumeProcessor(ctrl)
 		mockProcessor.EXPECT().
 			ConsumeProcessorName().
 			Return("test-processor").
@@ -87,16 +87,16 @@ func TestConsumer_Integration(t *testing.T) {
 			AnyTimes()
 
 		// Create consumer
-		consumer, err := kafkaconsumer.New(
+		consumer, err := consumer.New(
 			context.Background(),
 			serviceName,
 			kafka.brokers,
 			groupID,
-			map[kafkaconsumer.IConsumeProcessor][]string{
+			map[consumer.IConsumeProcessor][]string{
 				mockProcessor: {testTopic},
 			},
-			kafkaconsumer.WithTelemetry(mockTelemetry),
-			kafkaconsumer.WithErrorLogger(mockErrorLogger),
+			consumer.WithTelemetry(mockTelemetry),
+			consumer.WithErrorLogger(mockErrorLogger),
 		)
 		require.NoError(t, err)
 		require.NotNil(t, consumer)
@@ -115,10 +115,10 @@ func TestConsumer_Integration(t *testing.T) {
 
 	t.Run("consume single message", func(t *testing.T) {
 		// Create message channel to verify consumption
-		messageCh := make(chan kafkaconsumer.IMessage, 1)
+		messageCh := make(chan consumer.IMessage, 1)
 
 		// Create a mock processor that will send received message to the channel
-		mockProcessor := kafkaconsumer.NewMockIConsumeProcessor(ctrl)
+		mockProcessor := consumer.NewMockIConsumeProcessor(ctrl)
 		mockTelemetry.EXPECT().
 			CollectLag(gomock.Any(), serviceName, gomock.Any(), testTopic, testPartition, gomock.Any(), groupID, gomock.Any()).
 			AnyTimes()
@@ -131,7 +131,7 @@ func TestConsumer_Integration(t *testing.T) {
 			AnyTimes()
 		mockProcessor.EXPECT().
 			ConsumeKafkaMessages(gomock.Any(), testTopic, gomock.Any(), gomock.Any()).
-			DoAndReturn(func(_ context.Context, _ string, _ int32, msgs []kafkaconsumer.IMessage) error {
+			DoAndReturn(func(_ context.Context, _ string, _ int32, msgs []consumer.IMessage) error {
 				for _, msg := range msgs {
 					messageCh <- msg
 				}
@@ -140,16 +140,16 @@ func TestConsumer_Integration(t *testing.T) {
 			AnyTimes()
 
 		// Create and start consumer
-		consumer, err := kafkaconsumer.New(
+		consumer, err := consumer.New(
 			context.Background(),
 			serviceName,
 			kafka.brokers,
 			groupID,
-			map[kafkaconsumer.IConsumeProcessor][]string{
+			map[consumer.IConsumeProcessor][]string{
 				mockProcessor: {testTopic},
 			},
-			kafkaconsumer.WithTelemetry(mockTelemetry),
-			kafkaconsumer.WithErrorLogger(mockErrorLogger),
+			consumer.WithTelemetry(mockTelemetry),
+			consumer.WithErrorLogger(mockErrorLogger),
 		)
 		require.NoError(t, err)
 		require.NotNil(t, consumer)
@@ -186,10 +186,10 @@ func TestConsumer_Integration(t *testing.T) {
 		// Create message channel to verify consumption
 		// guarantee that the channel will immediately get the entire batch
 		expectedBatches := (testMessageCount + testBatchSize - 1) / testBatchSize // ceil division
-		messagesCh := make(chan []kafkaconsumer.IMessage, expectedBatches)
+		messagesCh := make(chan []consumer.IMessage, expectedBatches)
 
 		// Create a mock processor that will send received messages to the channel
-		mockProcessor := kafkaconsumer.NewMockIConsumeProcessor(ctrl)
+		mockProcessor := consumer.NewMockIConsumeProcessor(ctrl)
 		mockTelemetry.EXPECT().
 			CollectLag(gomock.Any(), serviceName, gomock.Any(), testTopic, testPartition, gomock.Any(), groupID, gomock.Any()).
 			AnyTimes()
@@ -202,26 +202,26 @@ func TestConsumer_Integration(t *testing.T) {
 			AnyTimes()
 		mockProcessor.EXPECT().
 			ConsumeKafkaMessages(gomock.Any(), testTopic, gomock.Any(), gomock.Any()).
-			DoAndReturn(func(_ context.Context, _ string, _ int32, msgs []kafkaconsumer.IMessage) error {
+			DoAndReturn(func(_ context.Context, _ string, _ int32, msgs []consumer.IMessage) error {
 				messagesCh <- msgs
 				return nil
 			}).
 			MinTimes(expectedBatches).MaxTimes(expectedBatches)
 
 		// Create and start consumer with batch configuration
-		consumer, err := kafkaconsumer.New(
+		consumer, err := consumer.New(
 			context.Background(),
 			serviceName,
 			kafka.brokers,
 			groupID,
-			map[kafkaconsumer.IConsumeProcessor][]string{
+			map[consumer.IConsumeProcessor][]string{
 				mockProcessor: {testTopic},
 			},
-			kafkaconsumer.WithTelemetry(mockTelemetry),
-			kafkaconsumer.WithErrorLogger(mockErrorLogger),
-			kafkaconsumer.WithBatchSize(testBatchSize),
-			kafkaconsumer.WithFlushTimeout(100*time.Millisecond),
-			kafkaconsumer.WithBatchTopics(testTopic),
+			consumer.WithTelemetry(mockTelemetry),
+			consumer.WithErrorLogger(mockErrorLogger),
+			consumer.WithBatchSize(testBatchSize),
+			consumer.WithFlushTimeout(100*time.Millisecond),
+			consumer.WithBatchTopics(testTopic),
 		)
 		require.NoError(t, err)
 		require.NotNil(t, consumer)

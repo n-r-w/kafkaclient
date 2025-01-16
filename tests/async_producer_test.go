@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/IBM/sarama"
-	kafkaproducer "github.com/n-r-w/kafkaclient/producer"
+	producer "github.com/n-r-w/kafkaclient/producer"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -29,8 +29,8 @@ func TestAsyncProducer_Integration(t *testing.T) {
 	defer ctrl.Finish()
 
 	// Create mock implementations.
-	mockTelemetry := kafkaproducer.NewMockITelemetry(ctrl)
-	mockErrorLogger := kafkaproducer.NewMockIErrorLogger(ctrl)
+	mockTelemetry := producer.NewMockITelemetry(ctrl)
+	mockErrorLogger := producer.NewMockIErrorLogger(ctrl)
 
 	// Setup expectations.
 	mockTelemetry.EXPECT().
@@ -52,9 +52,9 @@ func TestAsyncProducer_Integration(t *testing.T) {
 
 	t.Run("producer initialization", func(t *testing.T) {
 		ctx := context.Background()
-		producer, err := kafkaproducer.NewAsyncProducer(ctx, serviceName, kafka.brokers,
-			kafkaproducer.WithTelemetry(mockTelemetry),
-			kafkaproducer.WithErrorLogger(mockErrorLogger),
+		producer, err := producer.NewAsyncProducer(ctx, serviceName, kafka.brokers,
+			producer.WithTelemetry(mockTelemetry),
+			producer.WithErrorLogger(mockErrorLogger),
 		)
 		require.NoError(t, err, "Failed to create producer")
 		defer func() {
@@ -68,9 +68,9 @@ func TestAsyncProducer_Integration(t *testing.T) {
 
 	t.Run("send single message", func(t *testing.T) {
 		ctx := context.Background()
-		producer, err := kafkaproducer.NewAsyncProducer(ctx, serviceName, kafka.brokers,
-			kafkaproducer.WithTelemetry(mockTelemetry),
-			kafkaproducer.WithErrorLogger(mockErrorLogger),
+		producer, err := producer.NewAsyncProducer(ctx, serviceName, kafka.brokers,
+			producer.WithTelemetry(mockTelemetry),
+			producer.WithErrorLogger(mockErrorLogger),
 		)
 		require.NoError(t, err, "Failed to create producer")
 
@@ -106,9 +106,9 @@ func TestAsyncProducer_Integration(t *testing.T) {
 
 	t.Run("send multiple messages", func(t *testing.T) {
 		ctx := context.Background()
-		producer, err := kafkaproducer.NewAsyncProducer(ctx, serviceName, kafka.brokers,
-			kafkaproducer.WithTelemetry(mockTelemetry),
-			kafkaproducer.WithErrorLogger(mockErrorLogger),
+		producer, err := producer.NewAsyncProducer(ctx, serviceName, kafka.brokers,
+			producer.WithTelemetry(mockTelemetry),
+			producer.WithErrorLogger(mockErrorLogger),
 		)
 		require.NoError(t, err, "Failed to create producer")
 

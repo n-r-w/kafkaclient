@@ -1,4 +1,4 @@
-package kafkaconsumer
+package consumer
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-//go:generate mockgen -destination=consumer_mock.go -package=kafkaconsumer -source interface.go
+//go:generate mockgen -destination=consumer_mock.go -package=consumer -source interface.go
 
 // IMessage represents a consumer message interface.
 type IMessage interface {
