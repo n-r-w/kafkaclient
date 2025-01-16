@@ -4,6 +4,8 @@ The package provides a Kafka consumer implementation with support for batch proc
 
 ## Consumer Implementation
 
+### Using IConsumeProcessor Interface
+
 Implement the `IConsumeProcessor` interface to handle messages:
 
 ```go
@@ -62,6 +64,42 @@ c, err := consumer.New(
     consumer.WithErrorLogger(customErrorLogger),
 )
 ```
+
+### Simplified Consumer with Function Handler
+
+For simpler use cases, you can use the `NewSimple` constructor that accepts a function handler:
+
+```go
+// Example usage
+c, err := consumer.NewSimple(
+    ctx,
+    "example-service",
+    brokers,
+    groupID,
+    "message-processor",
+    func(ctx context.Context, topic string, partition int32, msgs []consumer.IMessage) error {
+        for _, msg := range msgs {
+            var message Message
+            if err := msg.ReadInJSON(&message); err != nil {
+                return fmt.Errorf("failed to parse message: %w", err)
+            }
+            
+            // Process message
+            fmt.Printf("Processing message: %+v\n", message)
+        }
+        return nil
+    },
+    []string{topic},
+    consumer.WithBatchSize(1000),
+    consumer.WithFlushTimeout(100*time.Millisecond),
+)
+```
+
+This approach is useful when:
+
+- You don't need a full processor implementation
+- You want to handle messages with a simple function
+- You want to reduce boilerplate code
 
 ## Message Processing
 
