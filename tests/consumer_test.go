@@ -239,7 +239,7 @@ func TestConsumer_Integration(t *testing.T) {
 
 		// Process all batches
 		processedMessages := 0
-		for i := 0; i < expectedBatches; i++ {
+		for i := range expectedBatches {
 			select {
 			case msgs := <-messagesCh:
 				// Calculate expected batch size
@@ -252,7 +252,7 @@ func TestConsumer_Integration(t *testing.T) {
 				require.Len(t, msgs, expectedSize)
 
 				// Verify each message in the batch
-				for j := 0; j < expectedSize; j++ {
+				for j := range expectedSize {
 					messageNum := processedMessages + j + 1
 					require.Equal(t, fmt.Sprintf("%s%d", testMessage, messageNum), string(msgs[j].Value()))
 					require.Equal(t, testTopic, msgs[j].Topic())

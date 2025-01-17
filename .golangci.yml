@@ -1,5 +1,5 @@
 # More info on config here: https://golangci-lint.run/usage/configuration/#config-file
-# Многое взято отсюда: https://gist.githubusercontent.com/maratori/47a4d00457a92aa426dbd48a18776322/raw/e9497a7e6b81b58b6ff8a5a4608b8667bfbe7f93/.golangci.yml
+# Based on: https://gist.githubusercontent.com/maratori/47a4d00457a92aa426dbd48a18776322/raw/e9497a7e6b81b58b6ff8a5a4608b8667bfbe7f93/.golangci.yml
 # Golang/Vscode: https://golangci-lint.run/welcome/integrations/
 
 run:
@@ -45,7 +45,7 @@ linters-settings:
     enable-all: true
     disable:
       - fieldalignment # too strict
-      - composites # чтобы не было спама предупреждений в монге
+      - composites # to avoid spamming warnings in mongodb
     # Settings per analyzer.
     settings:
       shadow:
@@ -86,9 +86,8 @@ linters-settings:
 
   exhaustruct:
     include:
-      # exhaustruct будет проверять все, если ничего нет в include, поэтому пишем тут бредятину,
-      # чтобы отключить автопроверки.
-      # структуры, которые надо проверить отмечаем как //exhaustruct:enforce
+      # if include is empty, exhaustruct will check all, so we put nonsense here to disable autodetection.
+      # structures that need to be checked are marked with //exhaustruct:enforce
       - qwertyuiofdsfsfsdfsdfsdf
     exclude:
 
@@ -182,8 +181,7 @@ linters:
     - unused # checks for unused constants, variables, functions and types
     - gocritic # provides diagnostics that check for bugs, performance and style issues
     - gocognit # computes and checks the cognitive complexity of functions
-    - mnd # detects magic numbers (требует последний golangci-lint)
-    # - gomnd # finds magic numbers (вместо mnd)
+    - mnd # detects magic numbers
     - prealloc # finds slice declarations that could potentially be preallocated
     - unparam # reports unused function parameters
     - staticcheck # is a go vet on steroids, applying a ton of static analysis checks
@@ -196,14 +194,14 @@ linters:
     - asciicheck # checks that your code does not contain non-ASCII identifiers
     - bidichk # checks for dangerous unicode character sequences
     - bodyclose # checks whether HTTP response body is closed successfully
-    # - canonicalheader # checks whether net/http.Header uses canonical header (требует последний golangci-lint)
-    # - copyloopvar # detects places where loop variables are copied (Go 1.22+) (требует последний golangci-lint)
+    - canonicalheader # checks whether net/http.Header uses canonical header
+    - copyloopvar # detects places where loop variables are copied (Go 1.22+)
     - cyclop # checks function and package cyclomatic complexity
     - dupl # tool for code clone detection
     - durationcheck # checks for two durations multiplied together
     - errname # checks that sentinel errors are prefixed with the Err and error types are suffixed with the Error
     - errorlint # finds code that will cause problems with the error wrapping scheme introduced in Go 1.13
-    # - fatcontext # detects nested contexts in loops (требует последний golangci-lint)
+    - fatcontext # detects nested contexts in loops
     - forbidigo # forbids identifiers
     - gocheckcompilerdirectives # validates go compiler directive comments (//go:)
     - gochecknoglobals # checks that no global variables exist
@@ -213,7 +211,7 @@ linters:
     - gomoddirectives # manages the use of 'replace', 'retract', and 'excludes' directives in go.mod
     - gomodguard # allow and block lists linter for direct Go module dependencies. This is different from depguard where there are different block types for example version constraints and module recommendations
     - goprintffuncname # checks that printf-like functions are named with f at the end
-    # - intrange # finds places where for loops could make use of an integer range (требует последний golangci-lint)
+    - intrange # finds places where for loops could make use of an integer range
     - lll # reports long lines
     - loggercheck # checks key value pairs for common logger libraries (kitlog,klog,logr,zap)
     - makezero # finds slice declarations with non-zero initial length
@@ -231,12 +229,12 @@ linters:
     - protogetter # reports direct reads from proto message fields when getters should be used
     - reassign # checks that package variables are not reassigned
     - sloglint # ensure consistent code style when using log/slog
-    # - spancheck # checks for mistakes with OpenTelemetry/Census spans (требует последний golangci-lint)
+    - spancheck # checks for mistakes with OpenTelemetry/Census spans
     - sqlclosecheck # checks that sql.Rows and sql.Stmt are closed
     - stylecheck # is a replacement for golint
     - testableexamples # checks if examples are testable (have an expected output)
     - testifylint # checks usage of github.com/stretchr/testify\
-    # - testpackage # makes you use a separate _test package. Довольно странная идея. Не всегда black-box тесты подходят
+    # - testpackage # makes you use a separate _test package.
     - tparallel # detects inappropriate usage of t.Parallel() method in your Go test codes
     - unconvert # removes unnecessary type conversions
     - usestdlibvars # detects the possibility to use variables/constants from the Go standard library
