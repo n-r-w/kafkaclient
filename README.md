@@ -2,6 +2,10 @@
 
 A Go package providing Kafka consumer and producer implementations with support for batch processing and async/sync message delivery.
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/n-r-w/kafkaclient.svg)](https://pkg.go.dev/github.com/n-r-w/kafkaclient)
+![CI Status](https://github.com/n-r-w/kafkaclient/actions/workflows/go.yml/badge.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/n-r-w/kafkaclient)](https://goreportcard.com/report/github.com/n-r-w/kafkaclient)
+
 ## Features
 
 - **Sarama Integration**: Built on top of [github.com/IBM/sarama](https://github.com/IBM/sarama) for reliable Kafka client implementation
