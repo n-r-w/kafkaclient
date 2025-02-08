@@ -3,6 +3,7 @@ package realtest
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"testing"
 	"time"
 
@@ -50,6 +51,10 @@ func TestAsyncProducer_Integration(t *testing.T) {
 	// Create test topic.
 	kafka.createTopic(t, testTopic, 1)
 
+	// Verify the message was sent by consuming it.
+	consumer := createTestConsumer(t, kafka.brokers)
+	defer func() { _ = consumer.Close() }()
+
 	t.Run("producer initialization", func(t *testing.T) {
 		ctx := context.Background()
 		producer, err := producer.NewAsyncProducer(ctx, serviceName, kafka.brokers,
@@ -83,24 +88,28 @@ func TestAsyncProducer_Integration(t *testing.T) {
 
 		msg := &sarama.ProducerMessage{
 			Topic: testTopic,
-			Value: sarama.StringEncoder(testMessage),
+			Value: sarama.StringEncoder(testMessage + "0"),
 		}
-
 		producer.SendMessage(ctx, msg)
 
-		// Verify the message was sent by consuming it.
-		consumer := createTestConsumer(t, kafka.brokers)
-		defer func() { _ = consumer.Close() }()
+		msg = &sarama.ProducerMessage{
+			Topic: testTopic,
+			Value: sarama.StringEncoder(testMessage + "1"),
+		}
+		producer.Input() <- msg
 
+		// Verify messages were sent by consuming them.
 		partitionConsumer, err := consumer.ConsumePartition(testTopic, testPartition, 0)
 		require.NoError(t, err, "Failed to create partition consumer")
 		defer func() { _ = partitionConsumer.Close() }()
 
-		select {
-		case msg := <-partitionConsumer.Messages():
-			require.Equal(t, testMessage, string(msg.Value), "Unexpected message content")
-		case <-time.After(5 * time.Second):
-			t.Fatal("Timeout waiting for message")
+		for i := range 2 {
+			select {
+			case msg := <-partitionConsumer.Messages():
+				require.Equal(t, testMessage+strconv.Itoa(i), string(msg.Value), "Unexpected message content")
+			case <-time.After(5 * time.Second):
+				t.Fatal("Timeout waiting for messages")
+			}
 		}
 	})
 
@@ -130,10 +139,7 @@ func TestAsyncProducer_Integration(t *testing.T) {
 		producer.SendMessages(ctx, messages)
 
 		// Verify messages were sent by consuming them.
-		consumer := createTestConsumer(t, kafka.brokers)
-		defer func() { _ = consumer.Close() }()
-
-		partitionConsumer, err := consumer.ConsumePartition(testTopic, testPartition, 1) // offset 1 since we already consumed message from previous test
+		partitionConsumer, err := consumer.ConsumePartition(testTopic, testPartition, 2) // offset 1 since we already consumed message from previous test
 		require.NoError(t, err, "Failed to create partition consumer")
 		defer func() { _ = partitionConsumer.Close() }()
 
