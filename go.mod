@@ -9,7 +9,7 @@ require (
 	github.com/testcontainers/testcontainers-go/modules/kafka v0.35.0
 	github.com/xdg-go/scram v1.1.2
 	go.uber.org/mock v0.5.0
-	golang.org/x/sync v0.10.0
+	golang.org/x/sync v0.11.0
 	google.golang.org/protobuf v1.36.4
 )
 
