@@ -2,7 +2,6 @@ package consumer
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"runtime/debug"
 	"sync"
@@ -195,9 +194,6 @@ func (c *messageHandler) consumeSingleProcessors(
 		wg.Go(func() error {
 			if err := c.recovery(c.retry(pCopy.ConsumeKafkaMessages, pCopy.ConsumeProcessorName(), SingleConsumerType))(
 				ctxWg, message.Topic(), message.Partition(), messages); err != nil {
-				if errors.Is(err, context.Canceled) {
-					return nil
-				}
 				return fmt.Errorf("processor %s failed: %w", pCopy.ConsumeProcessorName(), err)
 			}
 			return nil
