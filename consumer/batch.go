@@ -2,7 +2,6 @@ package consumer
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -187,9 +186,6 @@ func (c *batchProcessor) consumeProcessors(ctx context.Context,
 			if err := c.handler.recovery(c.handler.retry(
 				pCopy.ConsumeKafkaMessages, pCopy.ConsumeProcessorName(), BatchConsumerType))(
 				egCtx, topic, partition, messagesCopy); err != nil {
-				if errors.Is(err, context.Canceled) {
-					return nil
-				}
 				return fmt.Errorf("processor %s failed: %w", pCopy.ConsumeProcessorName(), err)
 			}
 
